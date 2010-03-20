@@ -1,0 +1,9 @@
+{
+    "name": "bcomm",
+    "description": "Browser Command",
+    "author": "Tom Robinson (http://tlrobinson.net/)",
+    "dependencies": [
+        "jack"
+    ],
+    "version": "0.0.1"
+}

@@ -1,0 +1,28 @@
+#!/bin/sh
+
+SIGINT=2
+
+pid=""
+
+function start_jackup () {
+	if [ "$pid" ]; then
+		echo "Killing old Jackup..."
+		kill "$pid"
+		sleep 1
+	fi
+	echo "Starting Jackup"
+	jackup -E none &
+	pid=$!
+}
+
+trap start_jackup $SIGINT
+
+start_jackup
+
+while true; do
+	echo "Waiting for $pid"
+	wait "$pid"
+	if [ $? -eq 127 ]; then
+		exit 1
+	fi
+done

@@ -19,4 +19,16 @@ function ExceptionLogger(app) {
     }
 }
 
-exports.app = ExceptionLogger(URLMap(require("bcomm/server")));
+function NoCache(app) {
+    return function(env) {
+        var response = app(env);
+
+        response.headers["Cache-Control"] = "no-cache";
+        response.headers["Pragma"] = "no-cache";
+        response.headers["Expires"] = "-1";
+
+        return response;
+    }
+}
+
+exports.app = NoCache(ExceptionLogger(URLMap(require("bcomm/server"))));

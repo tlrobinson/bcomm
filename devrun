@@ -4,7 +4,12 @@ SIGINT=2
 
 pid=""
 
-function start_jackup () {
+kill_jackup () {
+    kill "$pid"
+    exit
+}
+
+restart_jackup () {
 	if [ "$pid" ]; then
 		echo "Killing old Jackup..."
 		kill "$pid"
@@ -15,14 +20,9 @@ function start_jackup () {
 	pid=$!
 }
 
-trap start_jackup $SIGINT
-
-start_jackup
+trap kill_jackup $SIGINT
 
 while true; do
-	echo "Waiting for $pid"
-	wait "$pid"
-	if [ $? -eq 127 ]; then
-		exit 1
-	fi
+    restart_jackup
+    read
 done

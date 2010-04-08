@@ -7,6 +7,8 @@ var parser = exports.parser = new args.Parser();
 
 parser.help("BrowserCommand");
 
+parser.command("server",    "bcomm/commands/server");
+
 parser.command("runners",   "bcomm/commands/runners");
 parser.command("console",   "bcomm/commands/console");
 parser.command("tail",      "bcomm/commands/tail");

@@ -1,28 +1,41 @@
 #!/bin/sh
 
-SIGINT=2
+start_command="jackup -E none"
+source_directory="lib"
+check_period="1"
 
 pid=""
+lastcheckfile=".lastcheck"
 
-kill_jackup () {
+kill_server () {
     kill "$pid"
     exit
 }
 
-restart_jackup () {
-	if [ "$pid" ]; then
-		echo "Killing old Jackup..."
-		kill "$pid"
-		sleep 1
-	fi
-	echo "Starting Jackup"
-	jackup -E none &
-	pid=$!
+start_server () {
+    echo "Starting server..."
+    $start_command &
+    pid=$!
 }
 
-trap kill_jackup $SIGINT
+restart_server () {
+    if [ "$pid" ]; then
+        echo "Killing server $pid..."
+        kill "$pid"
+        sleep 1
+    fi
+    start_server
+}
 
+SIGINT=2
+trap kill_server $SIGINT
+
+start_server
+touch "$lastcheckfile"
 while true; do
-    restart_jackup
-    read
+    if [ $(find "$source_directory" -newer "$lastcheckfile") ]; then
+        restart_server
+    fi
+    touch "$lastcheckfile"
+    sleep "$check_period"
 done

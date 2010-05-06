@@ -31,4 +31,4 @@ function NoCache(app) {
     }
 }
 
-exports.app = NoCache(ExceptionLogger(URLMap(require("bcomm/server"))));
+exports.app = NoCache(ExceptionLogger(URLMap(require("bcomm/server").routes)));

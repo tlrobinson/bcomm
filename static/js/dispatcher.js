@@ -78,6 +78,40 @@ BCOMM.commands.eval = function(task) {
     }
 }
 
+var bcommIframe = null;
+
+BCOMM.commands.test = function(task) {
+    try {
+        if (!bcommIframe) {
+            bcommIframe = document.createElement("iframe");
+            document.body.appendChild(bcommIframe);
+        }
+        
+        var config = task.test.config || {};
+        
+        if (config.width) bcommIframe.width = config.width;
+        if (config.height) bcommIframe.height = config.height;
+        
+        bcommIframe.src = "/_tests/" + task.taskID + "/" + task.test.testID + "/index.html";
+        
+        console.log("bcommIframe.src="+bcommIframe.src);
+    } catch (e) {
+        emitResponse({
+            type : "error",
+            error : error,
+            complete : true
+        });
+    }
+}
+
+BCOMM.finishTest = function(result) {
+    emitResponse({
+        type : "finishTest",
+        result : result,
+        complete : true
+    });
+}
+
 var runnerID = BCOMM.generateID();
 
 var taskID = null;

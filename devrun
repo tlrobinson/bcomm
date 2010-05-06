@@ -1,6 +1,6 @@
 #!/bin/sh
 
-start_command="jackup -E none"
+start_command="jackup -E deployment"
 source_directory="lib"
 check_period="1"
 
@@ -16,13 +16,14 @@ start_server () {
     echo "Starting server..."
     $start_command &
     pid=$!
+    echo "Started server, pid=$pid"
 }
 
 restart_server () {
     if [ "$pid" ]; then
-        echo "Killing server $pid..."
-        kill "$pid"
-        sleep 1
+        echo "Killing server, pid=$pid"
+        kill -9 "$pid"
+        sleep 2
     fi
     start_server
 }

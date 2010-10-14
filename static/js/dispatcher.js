@@ -78,24 +78,45 @@ BCOMM.commands.eval = function(task) {
     }
 }
 
-var bcommIframe = null;
+BCOMM.commands.abort = function(task) {
+    BCOMM.complete(true);
+}
+
+BCOMM.commands.reset = function(task) {
+    BCOMM.complete(true);
+    window.location.reload();
+}
+
+var useFreshIFrame = true;
 
 BCOMM.commands.test = function(task) {
     try {
-        if (!bcommIframe) {
-            bcommIframe = document.createElement("iframe");
-            document.body.appendChild(bcommIframe);
+        var iframe = document.getElementById("bcomm-iframe");
+
+        if (!iframe || useFreshIFrame) {
+            if (iframe) iframe.parentNode.removeChild(iframe);
+            iframe = document.createElement("iframe");
+            iframe.id = "bcomm-iframe";
+            document.body.appendChild(iframe);
         }
-        
+
         var config = task.test.config || {};
-        
-        if (config.width) bcommIframe.width = config.width;
-        if (config.height) bcommIframe.height = config.height;
-        
-        bcommIframe.src = "/_tests/" + task.taskID + "/" + task.test.testID + "/index.html";
-        
-        console.log("bcommIframe.src="+bcommIframe.src);
-    } catch (e) {
+
+        if (config.width) iframe.width = config.width;
+        if (config.height) iframe.height = config.height;
+
+        iframe.src = "/_tests/" + task.taskID + "/" + task.test.testID + "/index.html";
+
+        // try to init as soon as possible
+        BCOMM.init((iframe.contentDocument && iframe.contentDocument.defaultView) || iframe.contentWindow);
+        window.setTimeout(function() {
+            BCOMM.init((iframe.contentDocument && iframe.contentDocument.defaultView) || iframe.contentWindow);
+        });
+        iframe.onload = function() {
+            BCOMM.init((iframe.contentDocument && iframe.contentDocument.defaultView) || iframe.contentWindow);
+        }
+
+    } catch (error) {
         emitResponse({
             type : "error",
             error : error,
@@ -104,13 +125,44 @@ BCOMM.commands.test = function(task) {
     }
 }
 
-BCOMM.finishTest = function(result) {
+BCOMM.init = function(_window) {
+    if (!_window || _window.BCOMM) {
+        return;
+    }
+    _window.BCOMM = BCOMM;
+
+    if (!_window.console)
+        _window.console = {};
+    var levels = ["log", "debug", "error", "info", "warn", "trace"];
+    for (var i = 0; i < levels.length; i++) {
+        (function(level) {
+            var original = _window.console[level];
+            _window.console[level] = function() {
+                if (typeof original === "function")
+                    original.apply(_window.console, arguments);
+
+                emitResponse({
+                    type : "console",
+                    console : {
+                        level : level,
+                        args : Array.prototype.slice.call(arguments)
+                    }
+                });
+            }
+        })(levels[i]);
+    };
+}
+
+BCOMM.complete = function(result) {
     emitResponse({
-        type : "finishTest",
+        type : "complete",
         result : result,
         complete : true
     });
 }
+
+// deprecated: finishTest
+BCOMM.finishTest = BCOMM.complete;
 
 var runnerID = BCOMM.generateID();
 
@@ -122,10 +174,6 @@ function emitResponse(response) {
     taskResponses.push(response);
     if (response.complete)
         taskID = null;
-}
-
-function completeTask() {
-    emitResponse({ complete : true });
 }
 
 function dispatchTask(request) {
@@ -156,14 +204,14 @@ function poll() {
 }
 
 function init() {
-    installHooks(window);
+    BCOMM.init(window);
 
     window.setTimeout(function() {
         emitResponse({
             type: "connected",
             connected : true
         });
-    }, 0);
+    }, 1);
 
     function unloadHandler() {
         emitResponse({
@@ -180,27 +228,4 @@ function init() {
     }
 
     window.setInterval(poll, BCOMM.runnerPollPeriod);
-}
-
-function installHooks(_window) {
-    if (!_window.console)
-        _window.console = {};
-    var levels = ["log", "debug", "error", "info", "warn", "trace"];
-    for (var i = 0; i < levels.length; i++) {
-        (function(level) {
-            var original = _window.console[level];
-            _window.console[level] = function() {
-                if (typeof original === "function")
-                    original.apply(_window.console, arguments);
-
-                emitResponse({
-                    type : "console",
-                    console : {
-                        level : level,
-                        args : Array.prototype.slice.call(arguments)
-                    }
-                });
-            }
-        })(levels[i]);
-    };
 }

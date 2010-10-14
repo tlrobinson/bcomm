@@ -1,7 +1,7 @@
 BCOMM: Browser Command
 ======================
 
-A simple system for issuing commands, tests, and other tasks to web browsers running locally or remotely.
+Dispatch commands, tests, logs, etc to and from remote browsers.
 
 Usage
 -----
@@ -12,9 +12,7 @@ The following are example usages. See the help for each command for more details
 
 Startup the server:
 
-    $ jackup -E deployment path/to/bcomm/jackconfig.js
-    Starting server...
-    Started server, pid=59680
+    $ bcomm server
 
 After the server is started, point multiple web browsers at the server (e.x http://localhost:8080/ if on local machine with default port) to start them as runners.
 

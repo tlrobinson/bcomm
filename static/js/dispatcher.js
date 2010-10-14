@@ -84,7 +84,11 @@ BCOMM.commands.abort = function(task) {
 
 BCOMM.commands.reset = function(task) {
     BCOMM.complete(true);
-    window.location.reload();
+
+    if (task.url)
+        window.location = task.url;
+    else
+        window.location.reload();
 }
 
 var useFreshIFrame = true;

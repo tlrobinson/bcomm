@@ -126,10 +126,11 @@ BCOMM.commands.test = function(task) {
 }
 
 BCOMM.init = function(_window) {
-    if (!_window || _window.BCOMM) {
+    if (!_window || _window.BCOMM_INITED) {
         return;
     }
     _window.BCOMM = BCOMM;
+    _window.BCOMM_INITED = true;
 
     if (!_window.console)
         _window.console = {};

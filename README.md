@@ -51,9 +51,9 @@ Open a simple JavaScript console to the connected runners and issue commands:
 
 ("undefined" is printed here because console.log() has no return value)
 
-Upload a test (a test is a directory containing an "index.html" file):
+Upload a test (can be a HTML or JavaScript file, or a directory containing an "index.html" file):
 
-    $ bcomm upload example
+    $ bcomm upload example/standalone.js
     cf1091
 
 Run the last uploaded test:
